@@ -16,6 +16,11 @@ What is built
                   (16- and 32-bit color) - if GraphApp's sources of them are
                   at C:\GraphApp (elsewhere: -DGRAPHAPP_DIR=<folder> on the
                   first cmake line).  GraphApp's folder is only read.
+  build\third_party\freetype\Release\freetype.lib
+                  FreeType 2.13.3, for TrueType fonts (source in
+                  third_party\freetype, from freetype.org)
+  lib\fgmesa.lib  Mesa 7.0.4's software OpenGL and its off-screen driver,
+                  OSMesa (source in third_party\mesa, from mesa3d.org)
   examples\<name>\<name>.exe  the examples, with 32-bit color
 
 It is a 32-bit build: the library has inline assembler, which the 64-bit
@@ -36,9 +41,12 @@ Running the examples
   pictures from ..\data.
 
   "double" (page flipping) needs the exclusive mode and does not run in a
-  window.  "config" is a console program.  The OpenGL examples (gears,
-  geartrain, morph3d), ttf and fgxtest are not built: they need Mesa,
-  FreeType and X11.
+  window.  "config" is a console program.  fgxtest is not built: it is for
+  X11.
+
+  The OpenGL examples (gears, geartrain, morph3d) draw with Mesa's software
+  renderer into memory, which OpenGUI then shows: they do not use the
+  graphics card.  "ttf" shows TrueType fonts through FreeType.
 
 A program of your own
   Include <fastgl/fastgl.h> (add "include", "xml" and "src\win32" to the
@@ -46,6 +54,11 @@ A program of your own
   fgl16.lib, fgl.lib) with tinycfg.lib, ddraw.lib, dxguid.lib, winmm.lib,
   gdi32.lib and user32.lib - and, if they were built, fgjpeg.lib, fgpng.lib
   and fgz.lib, defining FG_JPEG and FG_PNG as well.
+  TrueType fonts: the libraries are built with FG_TTF, so link freetype.lib
+  too.  OpenGL: add mesa\fglmesa.cpp to your program, "third_party\mesa\
+  include" to the include path, define FG_MESA_STATIC, read <windows.h>
+  before <fastgl/fglmesa.h>, and link fgmesa.lib.  (The examples'
+  entries in CMakeLists.txt show all of it.)
   Use the static runtime (/MT), as the libraries do, and do not define
   NDEBUG - see below.
 
@@ -64,6 +77,12 @@ What had to change in the source
   src/drivers.cpp, src/fgapp.cpp, src/_fastgl.h, src/win32/win32.cpp, .h
                             full screen at the desktop's size, and -oldmode
                             (see above).
+  src/win32/win32.cpp, .h   get_event() takes its key as long&, as the base
+                            class declares it.  With int& it was a
+                            different function that was never called: no
+                            window messages were collected, so there was no
+                            mouse or keyboard and Windows marked the window
+                            "not responding".
   other/graphapp_alloc.c    (new) the two memory functions GraphApp's
                             libjpeg asks GraphApp for.
 
@@ -75,5 +94,17 @@ What had to change in the source
     source uses after the loop.
   - _USE_MATH_DEFINES, for M_PI.
 
-Not included: TIFF pictures, TrueType fonts and OpenGL (libtiff, FreeType
-and Mesa would have to be added), and threads.
+What was changed in Mesa (third_party\mesa)
+  include/GL/gl.h, glext.h  with FG_MESA_STATIC defined, Mesa's functions
+                            are plain C calls, not __stdcall: built as a
+                            static library the Windows way, Mesa's own
+                            makeshift declarations of its gl_dispatch_stub
+                            functions don't match their definitions and the
+                            link fails.
+  Only the parts of Mesa the software renderer and OSMesa need were copied;
+  sources.txt is the list from Mesa's own Visual Studio project, less two
+  files that project doesn't compile either.
+  FreeType is unchanged (its optional zlib, bzip2, PNG, HarfBuzz and Brotli
+  parts are switched off).
+
+Not included: TIFF pictures (libtiff would have to be added), and threads.

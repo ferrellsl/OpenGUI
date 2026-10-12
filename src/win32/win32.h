@@ -130,7 +130,7 @@ class FGWin32DXDriver : public FGDriver
 		static long CALLBACK HandleMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 		FGWin32DXDriver(char *name, bool mode);
 		~FGWin32DXDriver();
-		virtual int get_event(int& type, int& key, int& x, int& y, int& buttons);
+		virtual int get_event(int& type, long& key, int& x, int& y, int& buttons);	// (long& key, as in FGDriver: with int& this was another function, never called)
 		virtual int available(void)
 		{
 			return 1;

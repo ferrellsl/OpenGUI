@@ -70,6 +70,49 @@ else()
   message(STATUS "JPEG and PNG pictures: not built (no GraphApp sources at ${GRAPHAPP_DIR})")
 endif()
 
+# TrueType fonts: FreeType 2.13.3 (third_party/freetype, from freetype.org),
+# built by its own CMake file with none of its optional parts.
+set(TTF_LIBS "")
+set(TTF_DEFINES "")
+if(EXISTS "${CMAKE_SOURCE_DIR}/third_party/freetype/CMakeLists.txt")
+  enable_language(C)
+  foreach(part ZLIB BZIP2 PNG HARFBUZZ BROTLI)
+    set(FT_DISABLE_${part} TRUE CACHE BOOL "" FORCE)
+  endforeach()
+  set(SKIP_INSTALL_ALL TRUE CACHE BOOL "" FORCE)
+  add_subdirectory(third_party/freetype EXCLUDE_FROM_ALL)
+  set(TTF_LIBS freetype)
+  set(TTF_DEFINES FG_TTF)
+  message(STATUS "TrueType fonts: FreeType from third_party/freetype")
+endif()
+
+# OpenGL: Mesa 7.0.4's software renderer and its off-screen driver, OSMesa
+# (third_party/mesa, from mesa3d.org), as one static library.  The list of
+# its sources is the one in Mesa's own Visual Studio project.
+set(HAVE_MESA FALSE)
+if(EXISTS "${CMAKE_SOURCE_DIR}/third_party/mesa/sources.txt")
+  enable_language(C)
+  file(STRINGS third_party/mesa/sources.txt MESA_LIST)
+  set(MESA_SOURCES "")
+  foreach(source ${MESA_LIST})
+    list(APPEND MESA_SOURCES third_party/mesa/${source})
+  endforeach()
+  add_library(fgmesa STATIC ${MESA_SOURCES}
+              third_party/mesa/src/mesa/drivers/common/driverfuncs.c
+              third_party/mesa/src/mesa/drivers/osmesa/osmesa.c)
+  target_include_directories(fgmesa PUBLIC third_party/mesa/include
+    PRIVATE third_party/mesa/src/mesa third_party/mesa/src/mesa/glapi third_party/mesa/src/mesa/main
+            third_party/mesa/src/mesa/shader third_party/mesa/src/mesa/shader/slang
+            third_party/mesa/src/mesa/shader/grammar third_party/mesa/src/mesa/swrast)
+  target_compile_definitions(fgmesa PRIVATE WIN32 _LIB MESA_MINWARN _CRT_SECURE_NO_DEPRECATE)
+  target_compile_definitions(fgmesa PUBLIC FG_MESA_STATIC)   # (see third_party/mesa/include/GL/gl.h)
+  target_compile_options(fgmesa PRIVATE /W0)
+  set_target_properties(fgmesa PROPERTIES ARCHIVE_OUTPUT_DIRECTORY_RELEASE "${CMAKE_SOURCE_DIR}/lib"
+                                          ARCHIVE_OUTPUT_DIRECTORY_DEBUG "${CMAKE_SOURCE_DIR}/lib/debug")
+  set(HAVE_MESA TRUE)
+  message(STATUS "OpenGL: Mesa from third_party/mesa")
+endif()
+
 file(GLOB FGL_SOURCES src/*.cpp src/agg2/*.cpp src/win32/*.cpp)
 foreach(depth 8 16 32)
   if(depth EQUAL 8)
@@ -78,7 +121,8 @@ foreach(depth 8 16 32)
     set(name fgl${depth})
   endif()
   add_library(${name} STATIC ${FGL_SOURCES})
-  target_compile_definitions(${name} PRIVATE INTO_FGL PUBLIC BPP${depth})
+  target_compile_definitions(${name} PRIVATE INTO_FGL PUBLIC BPP${depth} ${TTF_DEFINES})
+  target_link_libraries(${name} PUBLIC ${TTF_LIBS})
   if(NOT depth EQUAL 8)     # (the library has no JPEG or PNG in palette color)
     target_compile_definitions(${name} PUBLIC ${IMAGE_DEFINES})
     target_link_libraries(${name} PUBLIC ${IMAGE_LIBS})
@@ -90,9 +134,15 @@ foreach(depth 8 16 32)
 endforeach()
 
 # The examples, each built with 32-bit color beside its source (they look
-# for their pictures in ../data).  Those that need what isn't built here -
-# OpenGL through Mesa, FreeType fonts - are left out.
-set(SKIPPED_EXAMPLES data gears geartrain morph3d ttf fgxtest)
+# for their pictures in ../data).  fgxtest, which is for X11, is left out.
+set(SKIPPED_EXAMPLES data fgxtest)
+set(MESA_EXAMPLES gears geartrain morph3d)
+if(NOT HAVE_MESA)
+  list(APPEND SKIPPED_EXAMPLES ${MESA_EXAMPLES})
+endif()
+if(NOT TTF_LIBS)
+  list(APPEND SKIPPED_EXAMPLES ttf)
+endif()
 file(GLOB EXAMPLE_DIRS RELATIVE "${CMAKE_SOURCE_DIR}/examples" examples/*)
 foreach(example ${EXAMPLE_DIRS})
   if(IS_DIRECTORY "${CMAKE_SOURCE_DIR}/examples/${example}" AND NOT example IN_LIST SKIPPED_EXAMPLES)
@@ -106,6 +156,15 @@ foreach(example ${EXAMPLE_DIRS})
       add_executable(ex_${example} ${EXAMPLE_SOURCES})
       target_include_directories(ex_${example} PRIVATE include src/win32)   # (mydirent.h, which install.sh copies beside the headers)
       target_link_libraries(ex_${example} PRIVATE fgl32 gdi32 user32)
+      if(example IN_LIST MESA_EXAMPLES)
+        # (with OpenGUI's glue to OSMesa, built for the example's color depth)
+        target_sources(ex_${example} PRIVATE mesa/fglmesa.cpp)
+        target_include_directories(ex_${example} PRIVATE include/fastgl src)
+        target_link_libraries(ex_${example} PRIVATE fgmesa)
+        # (Mesa's gl.h declares the wgl functions on Windows, and wants
+        # <windows.h> read first for their types)
+        target_compile_options(ex_${example} PRIVATE /FIwindows.h)
+      endif()
       set_target_properties(ex_${example} PROPERTIES OUTPUT_NAME ${example}
         RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_SOURCE_DIR}/examples/${example}"
         RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_SOURCE_DIR}/examples/${example}"

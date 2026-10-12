@@ -1848,13 +1848,13 @@ int FGWin32DXDriver::set_mode(int ww, int hh)
 	return true;
 }
 
-int FGWin32DXDriver::get_event(int& type, int& key, int& x, int& y, int& buttons)
+int FGWin32DXDriver::get_event(int& type, long& key, int& x, int& y, int& buttons)
 {
 	MSG msg;
 	static unsigned but=0,mx=0,my=0, trigger=0;
 	int delta=0;
 
-	if( PeekMessage( &msg, hwnd, 0, 0, PM_NOREMOVE ) )
+	if( PeekMessage( &msg, NULL, 0, 0, PM_NOREMOVE ) )	// (any of the thread's messages, as GetMessage below takes)
 	{
 		is_ctrl  = IsKeyDown(VK_CONTROL);
 		is_shift = IsKeyDown(VK_SHIFT);
