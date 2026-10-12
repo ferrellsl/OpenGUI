@@ -1,15 +1,27 @@
-# OpenGUI 5.5.14 with Visual Studio 2019 (32-bit: the library has inline
-# assembler, which the 64-bit compiler doesn't take).
+# OpenGUI 5.5.14.
 #
+# Windows, with Visual Studio 2019 (32-bit: the library has inline assembler,
+# which the 64-bit compiler doesn't take):
 #   cmake -S . -B build -G "Visual Studio 16 2019" -A Win32
 #   cmake --build build --config Release
 #
-# Makes lib/fgl.lib (8-bit color), fgl16.lib, fgl32.lib and tinycfg.lib, and
-# the examples.
+# Linux, with gcc (64-bit, drawing through X11):
+#   cmake -S . -B build
+#   cmake --build build -j
+#
+# Makes the libraries in lib/ - fgl (8-bit color), fgl16, fgl32 - with
+# tinycfg, and the examples.
 cmake_minimum_required(VERSION 3.15)
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+  set(CMAKE_BUILD_TYPE Release CACHE STRING "" FORCE)
+endif()
 project(OpenGUI CXX)
 
 set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+# (single-configuration builds - make, ninja - put the libraries in lib/ too)
+set(FG_LIB_DIRS ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/lib"
+                ARCHIVE_OUTPUT_DIRECTORY_RELEASE "${CMAKE_SOURCE_DIR}/lib"
+                ARCHIVE_OUTPUT_DIRECTORY_DEBUG "${CMAKE_SOURCE_DIR}/lib/debug")
 
 # include/fastgl/fgversion.h, as compile.sh makes it from the file "version"
 file(STRINGS version VERSION_LINES)
@@ -25,10 +37,22 @@ file(WRITE include/fastgl/fgversion.h
 # defined: CMake defines it for every configuration but Debug.
 foreach(config RELEASE RELWITHDEBINFO MINSIZEREL)
   string(REPLACE "/DNDEBUG" "" CMAKE_CXX_FLAGS_${config} "${CMAKE_CXX_FLAGS_${config}}")
+  string(REPLACE "-DNDEBUG" "" CMAKE_CXX_FLAGS_${config} "${CMAKE_CXX_FLAGS_${config}}")
 endforeach()
 
-add_compile_definitions(_CRT_SECURE_NO_WARNINGS _CRT_NONSTDC_NO_WARNINGS _USE_MATH_DEFINES)   # (M_PI)
-add_compile_options(/W1 /EHsc /Zc:forScope-)   # (the old rule for "for (int i ...": i lives on after the loop)
+if(MSVC)
+  add_compile_definitions(_CRT_SECURE_NO_WARNINGS _CRT_NONSTDC_NO_WARNINGS _USE_MATH_DEFINES)   # (M_PI)
+  add_compile_options(/W1 /EHsc /Zc:forScope-)   # (the old rule for "for (int i ...": i lives on after the loop)
+  set(FG_QUIET /W0)
+else()
+  # The source is from 2005: the language as gcc 3 took it, and no promise
+  # that it keeps to the rules today's optimizer relies on.
+  set(CMAKE_CXX_STANDARD 98)
+  set(CMAKE_CXX_EXTENSIONS ON)
+  add_compile_options(-w -fno-strict-aliasing -fwrapv -fno-delete-null-pointer-checks)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fpermissive")
+  set(FG_QUIET -w)
+endif()
 
 file(GLOB XML_SOURCES xml/*.cpp)
 add_library(tinycfg STATIC ${XML_SOURCES})
@@ -37,7 +61,12 @@ target_include_directories(tinycfg PUBLIC xml)
 # JPEG and PNG pictures (16- and 32-bit color only): from the sources of
 # libjpeg 6b, libpng and zlib that GraphApp carries, if they are there.
 #   -DGRAPHAPP_DIR=<folder>   where GraphApp is (default C:/GraphApp)
-set(GRAPHAPP_DIR "C:/GraphApp" CACHE PATH "GraphApp's folder, for its libjpeg, libpng and libz sources")
+if(WIN32)
+  set(GRAPHAPP_DEFAULT "C:/GraphApp")
+else()
+  set(GRAPHAPP_DEFAULT "$ENV{HOME}/dev/GraphApp")
+endif()
+set(GRAPHAPP_DIR "${GRAPHAPP_DEFAULT}" CACHE PATH "GraphApp's folder, for its libjpeg, libpng and libz sources")
 set(IMAGE_LIBS "")
 set(IMAGE_DEFINES "")
 if(EXISTS "${GRAPHAPP_DIR}/src/libjpeg/jpeglib.h" AND EXISTS "${GRAPHAPP_DIR}/src/libpng/png.h" AND EXISTS "${GRAPHAPP_DIR}/src/libz/zlib.h")
@@ -61,8 +90,15 @@ if(EXISTS "${GRAPHAPP_DIR}/src/libjpeg/jpeglib.h" AND EXISTS "${GRAPHAPP_DIR}/sr
   add_library(fgpng STATIC ${PNG_SOURCES})
   target_include_directories(fgpng PUBLIC "${GRAPHAPP_DIR}/src/libpng")
   target_link_libraries(fgpng PUBLIC fgz)
-  set_target_properties(fgjpeg fgz fgpng PROPERTIES ARCHIVE_OUTPUT_DIRECTORY_RELEASE "${CMAKE_SOURCE_DIR}/lib"
-                                                    ARCHIVE_OUTPUT_DIRECTORY_DEBUG "${CMAKE_SOURCE_DIR}/lib/debug")
+  if(NOT MSVC)
+    # (libpng 1.2's MMX routines are in a file for 32-bit gcc that GraphApp
+    # doesn't carry: the plain C ones, then)
+    target_compile_definitions(fgpng PUBLIC PNG_NO_MMX_CODE)
+    target_compile_options(fgjpeg PRIVATE -w)
+    target_compile_options(fgpng PRIVATE -w)
+    target_compile_options(fgz PRIVATE -w)
+  endif()
+  set_target_properties(fgjpeg fgz fgpng PROPERTIES ${FG_LIB_DIRS})
   set(IMAGE_LIBS fgjpeg fgpng)
   set(IMAGE_DEFINES FG_JPEG FG_PNG)
   message(STATUS "JPEG and PNG pictures: from ${GRAPHAPP_DIR}")
@@ -104,16 +140,32 @@ if(EXISTS "${CMAKE_SOURCE_DIR}/third_party/mesa/sources.txt")
     PRIVATE third_party/mesa/src/mesa third_party/mesa/src/mesa/glapi third_party/mesa/src/mesa/main
             third_party/mesa/src/mesa/shader third_party/mesa/src/mesa/shader/slang
             third_party/mesa/src/mesa/shader/grammar third_party/mesa/src/mesa/swrast)
-  target_compile_definitions(fgmesa PRIVATE WIN32 _LIB MESA_MINWARN _CRT_SECURE_NO_DEPRECATE)
-  target_compile_definitions(fgmesa PUBLIC FG_MESA_STATIC)   # (see third_party/mesa/include/GL/gl.h)
-  target_compile_options(fgmesa PRIVATE /W0)
-  set_target_properties(fgmesa PROPERTIES ARCHIVE_OUTPUT_DIRECTORY_RELEASE "${CMAKE_SOURCE_DIR}/lib"
-                                          ARCHIVE_OUTPUT_DIRECTORY_DEBUG "${CMAKE_SOURCE_DIR}/lib/debug")
+  if(WIN32)
+    target_compile_definitions(fgmesa PRIVATE WIN32 _LIB MESA_MINWARN _CRT_SECURE_NO_DEPRECATE)
+    target_compile_definitions(fgmesa PUBLIC FG_MESA_STATIC)   # (see third_party/mesa/include/GL/gl.h)
+  else()
+    # (C as it was in 2008, and none of the tricks that need a dynamic library)
+    target_compile_options(fgmesa PRIVATE -std=gnu89 -fno-strict-aliasing -fwrapv -fcommon)
+    target_link_libraries(fgmesa PUBLIC m)
+  endif()
+  target_compile_options(fgmesa PRIVATE ${FG_QUIET})
+  set_target_properties(fgmesa PROPERTIES ${FG_LIB_DIRS})
   set(HAVE_MESA TRUE)
   message(STATUS "OpenGL: Mesa from third_party/mesa")
 endif()
 
-file(GLOB FGL_SOURCES src/*.cpp src/agg2/*.cpp src/win32/*.cpp)
+if(WIN32)
+  set(FG_OS win32)
+  set(FG_OS_LIBS ddraw dxguid winmm)
+  set(FG_OS_DEFINES "")
+else()
+  set(FG_OS linux)
+  find_package(X11 REQUIRED)
+  find_package(Threads REQUIRED)
+  set(FG_OS_LIBS ${X11_Xext_LIB} ${X11_LIBRARIES} Threads::Threads ${CMAKE_DL_LIBS} m)
+  set(FG_OS_DEFINES X11_DRIVER)
+endif()
+file(GLOB FGL_SOURCES src/*.cpp src/agg2/*.cpp src/${FG_OS}/*.cpp)
 foreach(depth 8 16 32)
   if(depth EQUAL 8)
     set(name fgl)
@@ -121,16 +173,15 @@ foreach(depth 8 16 32)
     set(name fgl${depth})
   endif()
   add_library(${name} STATIC ${FGL_SOURCES})
-  target_compile_definitions(${name} PRIVATE INTO_FGL PUBLIC BPP${depth} ${TTF_DEFINES})
+  target_compile_definitions(${name} PRIVATE INTO_FGL PUBLIC BPP${depth} ${TTF_DEFINES} ${FG_OS_DEFINES})
   target_link_libraries(${name} PUBLIC ${TTF_LIBS})
   if(NOT depth EQUAL 8)     # (the library has no JPEG or PNG in palette color)
     target_compile_definitions(${name} PUBLIC ${IMAGE_DEFINES})
     target_link_libraries(${name} PUBLIC ${IMAGE_LIBS})
   endif()
-  target_include_directories(${name} PUBLIC include/fastgl PRIVATE src src/agg2 src/win32)
-  target_link_libraries(${name} PUBLIC tinycfg ddraw dxguid winmm)
-  set_target_properties(${name} PROPERTIES ARCHIVE_OUTPUT_DIRECTORY_RELEASE "${CMAKE_SOURCE_DIR}/lib"
-                                           ARCHIVE_OUTPUT_DIRECTORY_DEBUG "${CMAKE_SOURCE_DIR}/lib/debug")
+  target_include_directories(${name} PUBLIC include/fastgl PRIVATE src src/agg2 src/${FG_OS})
+  target_link_libraries(${name} PUBLIC tinycfg ${FG_OS_LIBS})
+  set_target_properties(${name} PROPERTIES ${FG_LIB_DIRS})
 endforeach()
 
 # The examples, each built with 32-bit color beside its source (they look
@@ -154,8 +205,12 @@ foreach(example ${EXAMPLE_DIRS})
     endif()
     if(EXAMPLE_SOURCES)
       add_executable(ex_${example} ${EXAMPLE_SOURCES})
-      target_include_directories(ex_${example} PRIVATE include src/win32)   # (mydirent.h, which install.sh copies beside the headers)
-      target_link_libraries(ex_${example} PRIVATE fgl32 gdi32 user32)
+      target_include_directories(ex_${example} PRIVATE include)
+      target_link_libraries(ex_${example} PRIVATE fgl32)
+      if(WIN32)
+        target_include_directories(ex_${example} PRIVATE src/win32)   # (mydirent.h, which install.sh copies beside the headers)
+        target_link_libraries(ex_${example} PRIVATE gdi32 user32)
+      endif()
       if(example IN_LIST MESA_EXAMPLES)
         # (with OpenGUI's glue to OSMesa, built for the example's color depth)
         target_sources(ex_${example} PRIVATE mesa/fglmesa.cpp)
@@ -163,9 +218,12 @@ foreach(example ${EXAMPLE_DIRS})
         target_link_libraries(ex_${example} PRIVATE fgmesa)
         # (Mesa's gl.h declares the wgl functions on Windows, and wants
         # <windows.h> read first for their types)
-        target_compile_options(ex_${example} PRIVATE /FIwindows.h)
+        if(MSVC)
+          target_compile_options(ex_${example} PRIVATE /FIwindows.h)
+        endif()
       endif()
       set_target_properties(ex_${example} PROPERTIES OUTPUT_NAME ${example}
+        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/examples/${example}"
         RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_SOURCE_DIR}/examples/${example}"
         RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_SOURCE_DIR}/examples/${example}"
         VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/examples/${example}")

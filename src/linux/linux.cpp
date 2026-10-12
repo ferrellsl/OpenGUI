@@ -32,7 +32,7 @@
 
 #include "fgevent.h"
 
-#define MY_SIGNAL	SIGUNUSED		// SIGUSR2, SIGUNUSED
+#define MY_SIGNAL	SIGSYS		// (the number SIGUNUSED had: today's C library no longer names it)
 
 #ifdef FG_NAMESPACE
 namespace fgl {
@@ -962,13 +962,15 @@ int	FGLinuxDriver::available(void)
 	gid = getegid();
 	setuid(0);
 	setgid(0);
-	root = 0;
+	// (root was set for everyone unless -verbose was given, and the X11
+	// driver then complained at every start that it couldn't have the I/O
+	// ports)
+	root = (uid == 0);
 //	if (verbose) printf("UID = %d, EUID = %d\n", getuid(), geteuid());
 	if (verbose && uid)
 	{
 		printf("WARNING: You don't have ROOT privilegia!\a\n\n");
 	}
-	else root=1;
 	// set HW input/output privilegia ON
 	if (root) iopl(3);
 	return true;
@@ -1076,7 +1078,7 @@ int FGLinuxDriver::GetGPM(int& i, char **argv)
 		if (f)
 		{
 			static char a1[32];
-			while (fgets(arg, 79, f) > 0)
+			while (fgets(arg, 79, f) != 0)
 			{
 				if (sscanf(arg, "DEVICE=\"%s\"", a1) == 1)
 				{
@@ -1093,7 +1095,7 @@ int FGLinuxDriver::GetGPM(int& i, char **argv)
 		if (f)
 		{
 			static char a2[32];
-			while (fgets(arg, 79, f) > 0)
+			while (fgets(arg, 79, f) != 0)
 			{
 				if (sscanf(arg, "MOUSETYPE=\"%s\"", a2) == 1)
 				{
@@ -2837,6 +2839,9 @@ void FGX11Driver::SetCaption(char *new_name)
 
 static unsigned rgb16to32[65536];
 
+// the window manager's "close this window" (see set_mode() and get_event())
+static Atom wm_protocols, wm_delete_window;
+
 int FGX11Driver::set_mode(int ww, int hh)
 {
 	XEvent anevent;
@@ -2869,6 +2874,13 @@ int FGX11Driver::set_mode(int ww, int hh)
 			thedisplay,
 			thewindow,
 			StructureNotifyMask);
+
+		 // Ask to be told when the window's close button is pressed: the
+		 // window manager otherwise just cuts the connection to the X
+		 // server, and the program dies in Xlib without tidying up.
+		 wm_protocols = XInternAtom(thedisplay, "WM_PROTOCOLS", False);
+		 wm_delete_window = XInternAtom(thedisplay, "WM_DELETE_WINDOW", False);
+		 XSetWMProtocols(thedisplay, thewindow, &wm_delete_window, 1);
 
 		 XMapWindow(
 			thedisplay,
@@ -3136,6 +3148,22 @@ mouse:
 		case KeyRelease:
 			key = recode_key(TranslateKey(&xevent.xkey, false));
 			return 0;
+		case ClientMessage:
+			// The window's close button: Alt+X to the program, as the
+			// Windows driver does.  A program that doesn't leave on Alt+X
+			// is ended the second time it is asked.
+			if (xevent.xclient.message_type == wm_protocols && (Atom) xevent.xclient.data.l[0] == wm_delete_window)
+			{
+				static bool asked = false;
+				if (asked)
+					exit(0);
+				asked = true;
+				key = ALT_X;
+				type = KEYEVENT;
+				x = y = buttons = 0;
+				return 1;
+			}
+			break;
 		case Expose:
 			if ( xevent.xexpose.count == 0)
 			{

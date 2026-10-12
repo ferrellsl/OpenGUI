@@ -34,7 +34,6 @@ src/mesa/main/get.c
 src/mesa/main/getstring.c
 src/mesa/glapi/glapi.c
 src/mesa/glapi/glthread.c
-src/mesa/shader/grammar/grammar_crt.c
 src/mesa/shader/grammar/grammar_mesa.c
 src/mesa/main/hash.c
 src/mesa/main/hint.c

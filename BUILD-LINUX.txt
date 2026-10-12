@@ -1,0 +1,92 @@
+Building OpenGUI 5.5.14 on Linux (and in WSL)
+=============================================
+
+  cmake -S . -B build
+  cmake --build build -j
+
+Tried with gcc 13 on Ubuntu 24.04 under WSL 2, 64-bit.  It needs
+  sudo apt install build-essential cmake libx11-dev libxext-dev
+and nothing else: FreeType and Mesa are in third_party, and JPEG, PNG and
+zlib are compiled from GraphApp's sources (see below).
+
+What is built
+  lib/libfgl.a     the library for 8-bit (palette) color
+  lib/libfgl16.a   for 16-bit color
+  lib/libfgl32.a   for 32-bit color
+  build/libtinycfg.a   the XML configuration library the others use
+  lib/libfgjpeg.a, libfgpng.a, libfgz.a
+                   libjpeg 6b, libpng and zlib, for JPEG and PNG pictures
+                   (16- and 32-bit color) - if GraphApp's sources of them
+                   are at ~/dev/GraphApp (elsewhere: -DGRAPHAPP_DIR=<folder>
+                   on the first cmake line).  GraphApp's folder is only
+                   read.
+  build/third_party/freetype/libfreetype.a
+                   FreeType 2.13.3, for TrueType fonts
+  lib/libfgmesa.a  Mesa 7.0.4's software OpenGL and its off-screen driver,
+                   OSMesa
+  examples/<name>/<name>   the examples, with 32-bit color
+
+The same CMakeLists.txt builds the Windows libraries (BUILD-VS2019.txt); the
+two builds can share one folder, as nothing they make has the same name.
+
+Running the examples
+  cd examples/hello
+  ./hello
+  Run each from its own folder: they load pictures from ../data.  Alt+X
+  leaves an example, and so does the window's close button.
+
+  The library draws through X11, in a window of the size the program asks
+  for (640 x 480 for most examples); under WSL that is WSLg, which needs
+  nothing set up.  The X server must have 24- or 32-bit color, as they all
+  do today, and the 32-bit library is the one to use with it.  -window,
+  -oldmode and full screen at the desktop's size are for Windows only.
+
+  The library's other Linux drivers - the frame buffer console, SVGAlib and
+  DGA - are compiled as they were but are not tried: they need a real
+  console and root.
+
+  The OpenGL examples (gears, geartrain, morph3d) draw with Mesa's software
+  renderer into memory, which OpenGUI then shows: they do not use the
+  graphics card.  "ttf" shows TrueType fonts through FreeType.  "config" is
+  a console program.  fgxtest is not built.
+
+A program of your own
+  Include <fastgl/fastgl.h> (add "include" and "xml" to the include path),
+  define BPP32 and X11_DRIVER, and link libfgl32.a with libtinycfg.a,
+  libfgjpeg.a, libfgpng.a, libfgz.a, libfreetype.a, then -lXext -lX11
+  -lpthread -ldl -lm.  Define FG_JPEG, FG_PNG and FG_TTF as the library was
+  built.  OpenGL: add mesa/fglmesa.cpp to your program, "include/fastgl",
+  "src" and "third_party/mesa/include" to the include path, and link
+  libfgmesa.a.
+  Compile as the library is compiled: -std=gnu++98 -fpermissive, and do not
+  define NDEBUG (the library does real work inside assert()).
+
+What had to change in the source for Linux
+  src/linux/linux.cpp   - SIGUNUSED, which today's C library no longer has,
+                          is SIGSYS (the same number).
+                        - two "fgets(...) > 0" are "!= 0".
+                        - the window's close button is Alt+X to the
+                          program, as on Windows; before, the window
+                          manager cut the connection and the program died
+                          inside Xlib.
+                        - only root is taken for root.  Everyone was,
+                          unless -verbose was given, and every start
+                          printed "Cannot get permissions for I/O
+                          operations".
+  src/fgx.cpp           <limits.h>, for INT_MAX.
+  third_party/mesa/sources.txt
+                        grammar_crt.c left out: it is for building Mesa's
+                        grammar on its own, and doesn't compile for 64 bits.
+  Nothing else: the library was already written with 64 bits in mind, and
+  its assembler is only used by the Windows compilers.
+
+  And in the build:
+  - -std=gnu++98 -fpermissive: the language as gcc took it in 2005.
+  - -fno-strict-aliasing -fwrapv -fno-delete-null-pointer-checks: no
+    optimizations that count on rules code of that age doesn't keep.
+  - PNG_NO_MMX_CODE for libpng 1.2, whose MMX routines are in a file for
+    32-bit gcc that GraphApp doesn't carry.
+
+Checked with gcc's address sanitizer: every example starts and draws without
+a report, but "config", which hands WriteHexArray() strings shorter than the
+12 bytes it says they have (the example's own slip, on any system).

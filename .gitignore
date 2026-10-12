@@ -1,7 +1,13 @@
 build/
 build-*/
+build*.log
 lib/*.lib
+lib/*.a
 lib/debug/
+# (the examples built on Linux: programs with no extension beside their sources)
+examples/*/*
+!examples/*/*.*
+!examples/*/Makefile
 examples/*/*.exe
 examples/*/*.pdb
 examples/*/*.ilk

@@ -102,8 +102,8 @@ What was changed in Mesa (third_party\mesa)
                             functions don't match their definitions and the
                             link fails.
   Only the parts of Mesa the software renderer and OSMesa need were copied;
-  sources.txt is the list from Mesa's own Visual Studio project, less two
-  files that project doesn't compile either.
+  sources.txt is the list from Mesa's own Visual Studio project, less three
+  files that are only ever read into other files.
   FreeType is unchanged (its optional zlib, bzip2, PNG, HarfBuzz and Brotli
   parts are switched off).
 

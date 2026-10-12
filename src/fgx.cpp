@@ -43,6 +43,7 @@
 #include <time.h>
 #include <stdlib.h>
 #include <stdarg.h>
+#include <limits.h>
 
 #include "fastgl.h"
 #include "widgets.h"
