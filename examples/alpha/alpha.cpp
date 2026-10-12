@@ -6,7 +6,6 @@
 
 int main(int argc, char **argv)
 {
-abort();
 	fgl::FGApp MyApp(3, argc, argv, fgl::CBLACK, fgl::APP_ROOTWINDOW | fgl::APP_ENABLEALTX);
 	fgl::FGBitmap icon("../data/logo256.gif");
 	fgl::FGBitmap image("../data/texture.bmp");

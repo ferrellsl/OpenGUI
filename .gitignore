@@ -1,2 +1,11 @@
 build/
 build-*/
+lib/*.lib
+lib/debug/
+examples/*/*.exe
+examples/*/*.pdb
+examples/*/*.ilk
+# (written by the examples when they run)
+examples/*/*.rc
+examples/bitmap/window.bmp
+include/fastgl/fgversion.h

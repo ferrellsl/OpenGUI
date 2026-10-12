@@ -35,12 +35,12 @@ int main(int argc, char* argv[])
 	fgl::FGRadioGroupVertical* grp = new fgl::FGRadioGroupVertical(32,42,strings,keys,&controled_variable1,callback,w);
 	
 	int controled_variable2 = 7;
-	fgl::FGRadioGroupHorizontal* grp2 = new fgl::FGRadioGroupHorizontal(32,12,strings,keys,&controled_variable2,callback,w,64);
+	fgl::FGRadioGroupHorizontal* group2 = new fgl::FGRadioGroupHorizontal(32,12,strings,keys,&controled_variable2,callback,w,64);
 
 	app.Run();
 	
 	delete grp;	
-	delete grp2;	
+	delete group2;	
 	
 	return 0;
 }

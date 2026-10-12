@@ -356,6 +356,7 @@ struct FGInternalState
 	int	            force_ps2;
 	int				force_mice;
 	int             windowed_mode;
+	int             old_fullscreen;		// WIN32: full screen in the size the program asks for (-oldmode)
 	int             __hint_x_menu, __hint_y_menu;
 	int             synch;
 	int             nofb, noaccel, nodga , nox11;

@@ -1266,6 +1266,19 @@ FGWin32DXDriver::FGWin32DXDriver(char *NAME, bool mode) : FGDriver("DirectX5")
 	classname = NAME;
 
 	g_bExclusive = mode; // default is fullscreen mode
+	// Full screen without -oldmode: a window with no frame, over the whole
+	// desktop.  The program is then told the screen's true size in pixels
+	// (Windows would otherwise report a smaller, scaled-up screen to a
+	// program that doesn't say it understands scaled displays).
+	g_bBorderless = !mode && !fgl::fgstate.windowed_mode;
+	if (g_bBorderless)
+	{
+		HMODULE user = GetModuleHandle("user32.dll");
+		typedef BOOL (WINAPI *aware_t)(void);
+		aware_t aware = user ? (aware_t) GetProcAddress(user, "SetProcessDPIAware") : 0;
+		if (aware)
+			aware();
+	}
 	islinear = 1;
 
 	if (fgl::fgstate.verbose == 0)
@@ -1644,7 +1657,7 @@ void FGWin32DXDriver::SwitchMode(bool bExclusive, int nWidth, int nHeight, int n
 void FGWin32DXDriver::CreateMainWindow(void)
 {
 	// Create and display the main window
-	hwnd = CreateWindow(classname, "OpenGUI", g_bExclusive ? WS_POPUP : WS_OVERLAPPED,
+	hwnd = CreateWindow(classname, "OpenGUI", (g_bExclusive || g_bBorderless) ? WS_POPUP : WS_OVERLAPPED,
 	  CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, NULL, NULL, hInstance, NULL);
 
 	if (!hwnd)
@@ -1713,6 +1726,14 @@ void FGWin32DXDriver::AdjustMainWindow(bool bExclusive, int nScreenWidth, int nS
 			// attach the old menu
 			if( hOldMenu )
 				SetMenu(hwnd, hOldMenu);
+		}
+		if (g_bBorderless)
+		{
+			// no frame, and the whole of the screen
+			SetWindowLong(hwnd, GWL_STYLE, WS_POPUP);
+			SetWindowPos(hwnd, HWND_TOP, 0, 0, nScreenWidth, nScreenHeight, SWP_FRAMECHANGED);
+			ShowWindow(hwnd, SW_SHOW);
+			return;
 		}
 		// calculate the new window rect
 		SIZE szDesiredClient;

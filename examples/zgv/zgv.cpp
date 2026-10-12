@@ -158,7 +158,7 @@ class TWindow : public fgl::FGWindow
 					else
 					{
 #if defined(_WIN32) && !defined(__CYGWIN__)
-						cimage = images.begin() + int(random(count));
+						cimage = images.begin() + int(rand()%count);	// (random(n) is Borland's)
 #else
 						cimage = images.begin() + int(random()%count);
 #endif

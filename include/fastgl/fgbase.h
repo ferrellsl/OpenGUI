@@ -61,7 +61,8 @@ typedef void (*plotter_t) (FGPixel *ptr, int x, int y, int ww, FGPixel ink, unsi
 typedef void (*paletter_t) (unsigned, unsigned);
 typedef int  (*mouser_t) (int, int, int, int&);
 
-#define	CR		13
+// (a constant, not a macro: newer Windows headers have a structure field named CR)
+enum { CR = 13 };
 #define	ESC		27
 #define	TAB		9
 #define	LF		10

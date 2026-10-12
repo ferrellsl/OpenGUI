@@ -113,11 +113,11 @@ class OldConfig : public ConfigInterface
 		virtual bool ReadDouble(char* name, double &data, const char* domain = 0);
 		virtual bool ReadHex(char* name, char *data, int length_of_item, const char* domain = 0);
 
-		virtual bool ReadBoolArray(char* name, bool data[], int range, const char* domain = 0) {}
-		virtual bool ReadIntArray(char* name, int data[], int range, const char* domain = 0) {}
-		virtual bool ReadStringArray(char* name, char* data[], int max, int range, const char* domain = 0) {}
-		virtual bool ReadDoubleArray(char* name, double data[], int range, const char* domain = 0) {}
-		virtual bool ReadHexArray(char* name, char* data[], int length_of_item, int range, const char* domain = 0) {}
+		virtual bool ReadBoolArray(char* name, bool data[], int range, const char* domain = 0) { return false; }
+		virtual bool ReadIntArray(char* name, int data[], int range, const char* domain = 0) { return false; }
+		virtual bool ReadStringArray(char* name, char* data[], int max, int range, const char* domain = 0) { return false; }
+		virtual bool ReadDoubleArray(char* name, double data[], int range, const char* domain = 0) { return false; }
+		virtual bool ReadHexArray(char* name, char* data[], int length_of_item, int range, const char* domain = 0) { return false; }
 
 		virtual void WriteBool(char* name, bool data, const char* domain = 0);
 		virtual void WriteInt(char* name, int data, const char* domain = 0);

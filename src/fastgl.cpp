@@ -3092,7 +3092,7 @@ void FGAPI FGWindow::init(void)
 	current_tab_page = "";
 	ininput = 0;
 	call_handler = 0;
-	Buttony = FGControlBoxIterator(0);
+	Buttony = FGControlBoxIterator();	// (an iterator that points nowhere: it can no longer be made from 0)
 }
 
 /**

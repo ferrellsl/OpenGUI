@@ -284,6 +284,29 @@ static void GetModeSize(int mode)
 			}
 			break;
 	}
+#ifdef _WIN32
+	// Full screen on Windows is the desktop as it stands: the size the
+	// screen already has, whatever size the program asked for, so that the
+	// display mode isn't changed (a 640 x 480 mode on a flat panel is a
+	// blurred picture, and other windows are thrown about on the way in and
+	// out).  The program sees the true size through GetXRes() and
+	// GetYRes().  It is drawn in a window without a frame that covers the
+	// screen (win32.cpp), not through DirectDraw's exclusive mode, which
+	// today's Windows only imitates.  -oldmode on the command line brings
+	// back the exclusive mode in the size asked for; a window (-window,
+	// -geometry) is as ever.
+	if (!fgstate.windowed_mode && !fgstate.old_fullscreen)
+	{
+		DEVMODE now;
+		memset(&now, 0, sizeof(now));
+		now.dmSize = sizeof(now);
+		if (EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &now) && now.dmPelsWidth > 0 && now.dmPelsHeight > 0)
+		{
+			X_width = now.dmPelsWidth;
+			Y_width = now.dmPelsHeight;
+		}
+	}
+#endif
 }
 
 //!  first of all, try X11 if not disabled one
@@ -358,7 +381,10 @@ FGDriver * GetDriver(int priority)
 			return new FGVesaDriver;
 #endif
 #ifdef _WIN32
-			return new FGWin32DXDriver("myExe", !fgstate.windowed_mode);
+			// (DirectDraw's exclusive full screen only for -oldmode: full
+			// screen is otherwise a window without a frame, as large as
+			// the desktop - see GetModeSize() and win32.cpp)
+			return new FGWin32DXDriver("myExe", !fgstate.windowed_mode && fgstate.old_fullscreen);
 #endif
 			break;
 

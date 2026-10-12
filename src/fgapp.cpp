@@ -550,6 +550,16 @@ FGApp::FGApp(int m, int &argc, char **&argv, int bck, int appFlags)
 					else *cmdl++ = argv[curr];
 					break;
 #endif
+#ifdef _WIN32
+				case 'o':
+					if (!memcmp(&argv[curr][1], "old", 3))
+					{
+						fgstate.old_fullscreen = true;
+						par++;
+					}
+					else *cmdl++ = argv[curr];
+					break;
+#endif
 				case 'n':
 					if (!memcmp(&argv[curr][1], "nof", 3))
 					{
@@ -643,6 +653,8 @@ FGApp::FGApp(int m, int &argc, char **&argv, int bck, int appFlags)
 					printf(" -ps2     :force PS/2 mouse driver (LINUX)\n");
 					printf(" -mice    :force DEVMOUSE mouse driver (LINUX)\n");
 					printf(" -window  :run in windowed mode (WIN32)\n");
+					printf(" -oldmode :full screen in the size the program asks for (WIN32);\n");
+					printf("           otherwise full screen is the desktop's own size\n");
 					getchar();
 					par++;
 					break;

@@ -1,0 +1,79 @@
+Building OpenGUI 5.5.14 with Visual Studio 2019
+===============================================
+
+  cmake -S . -B build -G "Visual Studio 16 2019" -A Win32
+  cmake --build build --config Release
+
+or open build\OpenGUI.sln in Visual Studio after the first line.
+
+What is built
+  lib\fgl.lib     the library for 8-bit (palette) color
+  lib\fgl16.lib   for 16-bit color
+  lib\fgl32.lib   for 32-bit color
+  build\Release\tinycfg.lib   the XML configuration library the others use
+  lib\fgjpeg.lib, fgpng.lib, fgz.lib
+                  libjpeg 6b, libpng and zlib, for JPEG and PNG pictures
+                  (16- and 32-bit color) - if GraphApp's sources of them are
+                  at C:\GraphApp (elsewhere: -DGRAPHAPP_DIR=<folder> on the
+                  first cmake line).  GraphApp's folder is only read.
+  examples\<name>\<name>.exe  the examples, with 32-bit color
+
+It is a 32-bit build: the library has inline assembler, which the 64-bit
+compiler does not accept.
+
+Running the examples
+  In a window:                  hello.exe -window
+  Full screen (the default):    hello.exe
+  Full screen is the desktop as it stands - the size the screen already
+  has, in true pixels - whatever size the program asks for, so the display
+  mode is not changed; the program sees that size through GetXRes() and
+  GetYRes().  It is a window without a frame over the whole screen, not
+  DirectDraw's exclusive mode.
+  The old way, exclusive mode in the size asked for (640 x 480 for most
+  examples):                    hello.exe -oldmode
+  (On today's Windows that mode may show nothing but black.)
+  Alt+X leaves an example.  Run each from its own folder: they load
+  pictures from ..\data.
+
+  "double" (page flipping) needs the exclusive mode and does not run in a
+  window.  "config" is a console program.  The OpenGL examples (gears,
+  geartrain, morph3d), ttf and fgxtest are not built: they need Mesa,
+  FreeType and X11.
+
+A program of your own
+  Include <fastgl/fastgl.h> (add "include", "xml" and "src\win32" to the
+  include path), define BPP32 (or BPP16, or BPP8), and link fgl32.lib (or
+  fgl16.lib, fgl.lib) with tinycfg.lib, ddraw.lib, dxguid.lib, winmm.lib,
+  gdi32.lib and user32.lib - and, if they were built, fgjpeg.lib, fgpng.lib
+  and fgz.lib, defining FG_JPEG and FG_PNG as well.
+  Use the static runtime (/MT), as the libraries do, and do not define
+  NDEBUG - see below.
+
+What had to change in the source
+  include/fastgl/fgbase.h   CR (the Enter key) is a constant, not a macro:
+                            newer Windows headers have a field named CR.
+  src/fastgl.cpp            an iterator that points nowhere is made with
+                            FGControlBoxIterator(), not from 0.
+  xml/tinycfg.cpp           five empty functions declared to return bool
+                            now return false.
+  examples/radiogroup       a variable named grp2 (a macro in Windows'
+                            dlgs.h) renamed.
+  examples/zgv              rand() for Borland's random(n).
+  examples/alpha            an abort() left as the first line of main()
+                            removed.
+  src/drivers.cpp, src/fgapp.cpp, src/_fastgl.h, src/win32/win32.cpp, .h
+                            full screen at the desktop's size, and -oldmode
+                            (see above).
+  other/graphapp_alloc.c    (new) the two memory functions GraphApp's
+                            libjpeg asks GraphApp for.
+
+  And in the build, not the source:
+  - NDEBUG is never defined.  The library does real work inside assert()
+    - assert(name = new char[n]) - and NDEBUG removes it: the first window
+    then crashes.
+  - /Zc:forScope- keeps the old rule for "for (int i ...", whose i the
+    source uses after the loop.
+  - _USE_MATH_DEFINES, for M_PI.
+
+Not included: TIFF pictures, TrueType fonts and OpenGL (libtiff, FreeType
+and Mesa would have to be added), and threads.

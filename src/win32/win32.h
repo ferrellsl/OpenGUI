@@ -50,6 +50,7 @@ class FGWin32DXDriver : public FGDriver
 		LPDIRECTDRAW2		ddraw2;
 		LPDIRECTDRAWCLIPPER g_lpClipper;  // the windowed mode clipper
 		bool 				g_bExclusive; // (0) current mode -- windowed or fullscreen
+		bool 				g_bBorderless; // windowed, but with no frame and over the whole screen
 
 		int					DX5_Load(void);
 		void				DX5_Unload(void);
