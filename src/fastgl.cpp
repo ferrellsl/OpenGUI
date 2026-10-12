@@ -448,7 +448,7 @@ void FGAPI FGWindow::WindowRepaint(int xr, int yr, int w, int h)
 	// test overlap
 	Colise = FGApp::OdkryteOkno(This, posledne, x + xr, y + yr, w, h);
 
-	switch (long(Colise))
+	switch (fgintptr(Colise))
 	{
 		case -1:
 			status |= WDIRTY;
@@ -483,7 +483,7 @@ void FGAPI FGWindow::WindowRepaint(int xr, int yr, int w, int h)
 		posledne++;	// fixme:  was --,
 		if ( posledne == This) // finito?
 			break;
-		if (long(FGApp::OdkryteOkno(This, posledne, x + xr, y + yr, w, h)) == -1)
+		if (fgintptr(FGApp::OdkryteOkno(This, posledne, x + xr, y + yr, w, h)) == -1)
 			break;
 	}
 	while (*p1 != -1)
@@ -3213,7 +3213,7 @@ void FGAPI FGWindow::SetTabPage(const char *name)
 		++iter;
 	}
 	draw();
-	SendEvent(TABSWITCHEVENT, (long)current_tab_page);
+	SendEvent(TABSWITCHEVENT, (fgintptr)current_tab_page);
 }
 
 void FGAPI FGWindow::DeleteTabPages(void)

@@ -218,12 +218,21 @@ LASTEVENT
 	System event object. The events are presents in many types. By example
 	event is key pressing, mouse move, click on the mouse button, window move etc.
 */
+// An integer wide enough for a pointer: an event's key is sometimes one
+// (TABSWITCHEVENT's is the tab's name).  That is long everywhere but on
+// 64-bit Windows, where long has 32 bits.
+#ifdef _WIN64
+typedef long long fgintptr;
+#else
+typedef long fgintptr;
+#endif
+
 class FGEvent
 {
 		friend class FGBaseGui;
 		friend class FGApp;
 		int		type;
-		long	key;
+		fgintptr	key;
 		int		buttons, x,	y, w, h;
 		/**
 		This is a public member of FGEvent class and it is assigned for ACCELEVENT only.
@@ -261,12 +270,12 @@ class FGEvent
 		is adjusted into separate window procedures, each per window. This procedure
 		is fact a one big switch statement with many cases.
 		*/
-		FGEvent(int T=NOEVENT,	int	K=0, int X=0, int Y=0, int W=0, int H=0)
+		FGEvent(int T=NOEVENT,	fgintptr	K=0, int X=0, int Y=0, int W=0, int H=0)
 			: type(T), key(K), x(X), y(Y), w(W), h(H), guiType(0), wnd(0), accel(0)
 		{
 		}
 		//! Returns the value of key member of class FGEvent. As for event KEYEVENT, it return a key code.
-		long		GetKey(void)  const { return key;	}
+		fgintptr	GetKey(void)  const { return key;	}
 		//! Return a text string, which identified the name of events, or string "NONSENSE".
 		const char	*GetName(void)  const { if (type<0 || type>=LASTEVENT) return eventName[LASTEVENT]; return eventName[type]; }
 		//! Returns type of the event.

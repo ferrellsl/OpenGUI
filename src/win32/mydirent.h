@@ -31,7 +31,7 @@ struct dirent
 */
 typedef struct
 {
-	unsigned long _d_hdir;              /* directory handle */
+	void         *_d_hdir;              /* directory handle (a pointer: 64 bits in a 64-bit program) */
 	char         *_d_dirname;           /* directory name */
 	unsigned      _d_magic;             /* magic cookie for verifying handle */
 	unsigned      _d_nfiles;            /* no. of files remaining in buf */

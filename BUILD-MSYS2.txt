@@ -1,0 +1,80 @@
+Building OpenGUI 5.5.14 with MSYS2 (MinGW-w64 gcc)
+==================================================
+
+In an "MSYS2 MINGW64" shell:
+
+  cmake -S . -B build-msys -G Ninja
+  cmake --build build-msys
+
+Tried with gcc 16.2 in the MINGW64 environment: a 64-bit Windows build.  It
+needs
+  pacman -S mingw-w64-x86_64-gcc mingw-w64-x86_64-cmake mingw-w64-x86_64-ninja
+and nothing else: FreeType and Mesa are in third_party, and JPEG, PNG and
+zlib are compiled from GraphApp's sources at C:\GraphApp (elsewhere:
+-DGRAPHAPP_DIR=<folder> on the first cmake line; the folder is only read).
+
+What is built
+  lib\libfgl.a, libfgl16.a, libfgl32.a   the library for 8-, 16- and 32-bit
+                                         color
+  build-msys\libtinycfg.a                the XML configuration library
+  lib\libfgjpeg.a, libfgpng.a, libfgz.a  JPEG and PNG pictures
+  build-msys\third_party\freetype\libfreetype.a   TrueType fonts
+  lib\libfgmesa.a                        Mesa's software OpenGL and OSMesa
+  examples\<name>\<name>.exe             the examples, with 32-bit color
+
+The programs are linked with -static: they need no DLL of the compiler's,
+only Windows' own.
+
+The examples have the names the Visual Studio build gives them, in the same
+folders, so whichever of the two was built last is the one that is there.
+(The libraries don't clash: lib*.a here, *.lib there.)
+
+Running the examples
+  As with the Visual Studio build (BUILD-VS2019.txt): hello.exe -window for
+  a window, hello.exe for full screen at the desktop's size, Alt+X to leave,
+  each run from its own folder.
+
+A program of your own
+  Include <fastgl/fastgl.h> (add "include", "xml" and "src\win32" to the
+  include path), define BPP32, FG_JPEG, FG_PNG and FG_TTF, and link
+  libfgl32.a with libtinycfg.a, libfgjpeg.a, libfgpng.a, libfgz.a,
+  libfreetype.a, then -lddraw -ldxguid -lwinmm -lgdi32 -luser32.
+  OpenGL: add mesa\fglmesa.cpp to your program, "include\fastgl", "src" and
+  "third_party\mesa\include" to the include path, define FG_MESA_STATIC,
+  compile with -include windows.h, and link libfgmesa.a.
+  Compile as the library is compiled: -std=gnu++98 -fpermissive, and do not
+  define NDEBUG (the library does real work inside assert()).
+
+What had to change in the source for 64-bit Windows
+  On 64-bit Windows a long has 32 bits and a pointer 64 - on 64-bit Linux
+  both have 64, which is what the library counted on.  The places where a
+  pointer went through a long:
+
+  include/fastgl/fgevent.h, fgwindow.h
+                        an event's key is an fgintptr - an integer as wide
+                        as a pointer (long everywhere but on 64-bit
+                        Windows) - and so are the key FGEvent's constructor
+                        and FGWindow::SendEvent() take and the one GetKey()
+                        returns.  TABSWITCHEVENT's key is a pointer to the
+                        tab's name; it was also cut to an int on its way
+                        in, on 64-bit Linux as well.
+  src/fgapp.cpp         the drivers still hand their key back as a long,
+                        through a variable of its own.
+  src/fastgl.cpp        fgintptr where a window pointer is compared with -1
+                        and where the tab's name is sent.
+  src/win32/mydirent.h, mydirent.cpp
+                        the directory search handle is kept as a pointer,
+                        not an unsigned long.
+
+  The other such places are left as they are, being harmless: small numbers
+  kept in a pointer (a control's parameter), the difference of two pointers
+  into one string, a printout, and code for the Linux console.
+
+  The library's assembler is for Visual C++ and Borland only; gcc compiles
+  the C beside it.
+
+  The build is as for Linux (BUILD-LINUX.txt): -std=gnu++98 -fpermissive,
+  -fno-strict-aliasing -fwrapv -fno-delete-null-pointer-checks, and
+  PNG_NO_MMX_CODE.
+
+Not tried: the 32-bit (MINGW32) and UCRT64 environments.

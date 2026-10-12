@@ -273,7 +273,7 @@ class FGWindow : public FGBaseGui
 		int	 		printf(int,int,const char *, ... );
 
 		//! The helper for event sending to the FGWindow.
-		void 		FGAPI SendEvent(int event, int key=0, int x=0, int y=0)
+		void 		FGAPI SendEvent(int event, fgintptr key=0, int x=0, int y=0)
 		{
 			FGEvent e(event,key,x,y);
 			SendToWindow(&e);

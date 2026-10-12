@@ -5,9 +5,15 @@
 #   cmake -S . -B build -G "Visual Studio 16 2019" -A Win32
 #   cmake --build build --config Release
 #
+# Windows, with MSYS2's gcc (64-bit), in an "MSYS2 MINGW64" shell:
+#   cmake -S . -B build-msys -G Ninja
+#   cmake --build build-msys
+#
 # Linux, with gcc (64-bit, drawing through X11):
 #   cmake -S . -B build
 #   cmake --build build -j
+#
+# (BUILD-VS2019.txt, BUILD-MSYS2.txt and BUILD-LINUX.txt say more.)
 #
 # Makes the libraries in lib/ - fgl (8-bit color), fgl16, fgl32 - with
 # tinycfg, and the examples.
@@ -52,6 +58,10 @@ else()
   add_compile_options(-w -fno-strict-aliasing -fwrapv -fno-delete-null-pointer-checks)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fpermissive")
   set(FG_QUIET -w)
+  if(MINGW)
+    # (programs that need none of the compiler's own DLLs)
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static")
+  endif()
 endif()
 
 file(GLOB XML_SOURCES xml/*.cpp)
@@ -143,10 +153,13 @@ if(EXISTS "${CMAKE_SOURCE_DIR}/third_party/mesa/sources.txt")
   if(WIN32)
     target_compile_definitions(fgmesa PRIVATE WIN32 _LIB MESA_MINWARN _CRT_SECURE_NO_DEPRECATE)
     target_compile_definitions(fgmesa PUBLIC FG_MESA_STATIC)   # (see third_party/mesa/include/GL/gl.h)
-  else()
+  endif()
+  if(NOT MSVC)
     # (C as it was in 2008, and none of the tricks that need a dynamic library)
     target_compile_options(fgmesa PRIVATE -std=gnu89 -fno-strict-aliasing -fwrapv -fcommon)
-    target_link_libraries(fgmesa PUBLIC m)
+    if(NOT WIN32)
+      target_link_libraries(fgmesa PUBLIC m)
+    endif()
   endif()
   target_compile_options(fgmesa PRIVATE ${FG_QUIET})
   set_target_properties(fgmesa PROPERTIES ${FG_LIB_DIRS})
@@ -220,6 +233,8 @@ foreach(example ${EXAMPLE_DIRS})
         # <windows.h> read first for their types)
         if(MSVC)
           target_compile_options(ex_${example} PRIVATE /FIwindows.h)
+        elseif(WIN32)
+          target_compile_options(ex_${example} PRIVATE -include windows.h)
         endif()
       endif()
       set_target_properties(ex_${example} PROPERTIES OUTPUT_NAME ${example}

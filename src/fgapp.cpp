@@ -1234,12 +1234,17 @@ void FGApp::GetUserEvent(FGEvent& EVENT, int waits)
 	{
 		if (locked == false)
 		{
-			rc = __fg_driver->get_event(EVENT.type,EVENT.key,EVENT.x,EVENT.y,EVENT.buttons);
+			// (the drivers hand a key back as a long; the event's own is
+			// as wide as a pointer, which on 64-bit Windows is wider)
+			long driver_key = (long) EVENT.key;
+			rc = __fg_driver->get_event(EVENT.type,driver_key,EVENT.x,EVENT.y,EVENT.buttons);
+			EVENT.key = driver_key;
 			// try extra input if available
 			if (rc == 0)
 				if (user_input_drv)
 				{
-					rc = user_input_drv->GetInputEvent(EVENT.type,EVENT.key,EVENT.x,EVENT.y,EVENT.buttons);
+					rc = user_input_drv->GetInputEvent(EVENT.type,driver_key,EVENT.x,EVENT.y,EVENT.buttons);
+					EVENT.key = driver_key;
 					if (rc)
 						user_input_drv->Scale(EVENT.x, EVENT.y);
 //printf("(%d) t = %d, x = %d, y = %d, butt = %d\n", rc, EVENT.type, EVENT.x, EVENT.y, EVENT.buttons);

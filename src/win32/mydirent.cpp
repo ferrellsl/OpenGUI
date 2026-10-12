@@ -92,7 +92,7 @@ DIR * opendir(const char *dirname)
 	/* Everything is OK.  Save information in the DIR structure, return it.
 	 */
 	dir->_d_nfiles  = 1;
-	dir->_d_hdir    = (unsigned long)h;
+	dir->_d_hdir    = (void *)h;
 	dir->_d_dirname = name;
 	dir->_d_magic   = DIRMAGIC;
 	return dir;
@@ -136,7 +136,7 @@ void rewinddir(DIR *dir)
 	if ((h = FindFirstFile((LPSTR)dir->_d_dirname,
             (LPWIN32_FIND_DATA)&dir->_d_buf[0])) != (HANDLE)-1)
     {
-        dir->_d_hdir   = (unsigned long)h;
+        dir->_d_hdir   = (void *)h;
         dir->_d_nfiles = 1;
     }
 }
