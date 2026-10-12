@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?fileVersion 3.0.0?>
+
+<ManagedProjectBuildInfo>
+<project id="fgl-eclipse.cdt.managedbuild.target.gnu.exe.2009772526" name="Executable (Gnu)" projectType="cdt.managedbuild.target.gnu.exe">
+<configuration id="cdt.managedbuild.config.gnu.exe.debug.885739525" name="Debug" parent="cdt.managedbuild.config.gnu.exe.debug" artifactName="fgl-eclipse" errorParsers="org.eclipse.cdt.core.MakeErrorParser;org.eclipse.cdt.core.GCCErrorParser;org.eclipse.cdt.core.GLDErrorParser;org.eclipse.cdt.core.GASErrorParser" cleanCommand="rm -rf">
+<toolChain superClass="cdt.managedbuild.toolchain.gnu.exe.debug" id="cdt.managedbuild.toolchain.gnu.exe.debug.1342024643" name="%ToolChainName.Dbg">
+<tool superClass="cdt.managedbuild.tool.gnu.c.compiler.exe.debug" id="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.1329075066" name="GCC C Compiler"/>
+<tool superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug" id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.1480042047" name="GCC C++ Compiler">
+<option superClass="gnu.cpp.compiler.option.preprocessor.def" id="gnu.cpp.compiler.option.preprocessor.def.155425195" valueType="definedSymbols">
+<listOptionValue value="BPP16" builtIn="false"/>
+<listOptionValue value="BPP16" builtIn="false"/>
+<listOptionValue value="__REGRESS__" builtIn="false"/>
+<listOptionValue value="INTO_FGL" builtIn="false"/>
+<listOptionValue value="X11_DRIVER" builtIn="false"/>
+<listOptionValue value="FG_JPEG" builtIn="false"/>
+</option>
+<option superClass="gnu.cpp.compiler.option.include.paths" id="gnu.cpp.compiler.option.include.paths.1221514912" valueType="includePath">
+<listOptionValue value="../../include/fastgl" builtIn="false"/>
+<listOptionValue value="../linux" builtIn="false"/>
+<listOptionValue value="../agg2" builtIn="false"/>
+<listOptionValue value="../" builtIn="false"/>
+</option>
+</tool>
+<tool superClass="cdt.managedbuild.tool.gnu.c.linker.exe.debug" id="cdt.managedbuild.tool.gnu.c.linker.exe.debug.1469103888" name="GCC C Linker"/>
+<tool superClass="cdt.managedbuild.tool.gnu.cpp.linker.exe.debug" id="cdt.managedbuild.tool.gnu.cpp.linker.exe.debug.1945588053" name="GCC C++ Linker">
+<option superClass="gnu.cpp.link.option.libs" id="gnu.cpp.link.option.libs.1374240069" valueType="libs">
+<listOptionValue value="tinycfg" builtIn="false"/>
+<listOptionValue value="Xext" builtIn="false"/>
+<listOptionValue value="X11" builtIn="false"/>
+<listOptionValue value="jpeg" builtIn="false"/>
+</option>
+<option superClass="gnu.cpp.link.option.paths" id="gnu.cpp.link.option.paths.1126192418" valueType="stringList">
+<listOptionValue value="/usr/X11R6/lib" builtIn="false"/>
+</option>
+</tool>
+<tool superClass="cdt.managedbuild.tool.gnu.assembler.exe.debug" id="cdt.managedbuild.tool.gnu.assembler.exe.debug.1384419463" name="GCC Assembler"/>
+<macros/>
+</toolChain>
+<resourceConfiguration id="cdt.managedbuild.config.gnu.exe.debug.885739525./fgl-eclipse/win32/ddraw.h" name="ddraw.h" exclude="true" resourcePath="/fgl-eclipse/win32/ddraw.h" toolsToInvoke="" rcbsApplicability="disable">
+<tool id="org.eclipse.cdt.managedbuilder.ui.rcbs.1312584532" name="Resource Custom Build Step" command="" customBuildStep="true" announcement="">
+<inputType id="org.eclipse.cdt.managedbuilder.ui.rcbs.inputtype.2036310126" name="Resource Custom Build Step Input Type">
+<additionalInput paths="" kind="additionalinputdependency"/>
+</inputType>
+<outputType id="org.eclipse.cdt.managedbuilder.ui.rcbs.outputtype.400673508" name="Resource Custom Build Step Output Type" outputNames=""/>
+</tool>
+</resourceConfiguration>
+<resourceConfiguration id="cdt.managedbuild.config.gnu.exe.debug.885739525./fgl-eclipse/win32/dinput.h" name="dinput.h" exclude="true" resourcePath="/fgl-eclipse/win32/dinput.h" toolsToInvoke="" rcbsApplicability="disable">
+<tool id="org.eclipse.cdt.managedbuilder.ui.rcbs.862136683" name="Resource Custom Build Step" command="" customBuildStep="true" announcement="">
+<inputType id="org.eclipse.cdt.managedbuilder.ui.rcbs.inputtype.1530441891" name="Resource Custom Build Step Input Type">
+<additionalInput paths="" kind="additionalinputdependency"/>
+</inputType>
+<outputType id="org.eclipse.cdt.managedbuilder.ui.rcbs.outputtype.1742037724" name="Resource Custom Build Step Output Type" outputNames=""/>
+</tool>
+</resourceConfiguration>
+<resourceConfiguration id="cdt.managedbuild.config.gnu.exe.debug.885739525./fgl-eclipse/win32/dsound.h" name="dsound.h" exclude="true" resourcePath="/fgl-eclipse/win32/dsound.h" toolsToInvoke="" rcbsApplicability="disable">
+<tool id="org.eclipse.cdt.managedbuilder.ui.rcbs.979024968" name="Resource Custom Build Step" command="" customBuildStep="true" announcement="">
+<inputType id="org.eclipse.cdt.managedbuilder.ui.rcbs.inputtype.46308305" name="Resource Custom Build Step Input Type">
+<additionalInput paths="" kind="additionalinputdependency"/>
+</inputType>
+<outputType id="org.eclipse.cdt.managedbuilder.ui.rcbs.outputtype.279937404" name="Resource Custom Build Step Output Type" outputNames=""/>
+</tool>
+</resourceConfiguration>
+<resourceConfiguration id="cdt.managedbuild.config.gnu.exe.debug.885739525./fgl-eclipse/win32/mydirent.cpp" name="mydirent.cpp" exclude="true" resourcePath="/fgl-eclipse/win32/mydirent.cpp" toolsToInvoke="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.1480042047./fgl-eclipse/win32/mydirent.cpp" rcbsApplicability="disable">
+<tool superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.1480042047" id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.1480042047./fgl-eclipse/win32/mydirent.cpp" name="GCC C++ Compiler"/>
+<tool id="org.eclipse.cdt.managedbuilder.ui.rcbs.1775932415" name="Resource Custom Build Step" command="" customBuildStep="true" announcement="">
+<inputType id="org.eclipse.cdt.managedbuilder.ui.rcbs.inputtype.744346435" name="Resource Custom Build Step Input Type">
+<additionalInput paths="" kind="additionalinputdependency"/>
+</inputType>
+<outputType id="org.eclipse.cdt.managedbuilder.ui.rcbs.outputtype.1331115196" name="Resource Custom Build Step Output Type" outputNames=""/>
+</tool>
+</resourceConfiguration>
+<resourceConfiguration id="cdt.managedbuild.config.gnu.exe.debug.885739525./fgl-eclipse/win32/mydirent.h" name="mydirent.h" exclude="true" resourcePath="/fgl-eclipse/win32/mydirent.h" toolsToInvoke="" rcbsApplicability="disable">
+<tool id="org.eclipse.cdt.managedbuilder.ui.rcbs.452027859" name="Resource Custom Build Step" command="" customBuildStep="true" announcement="">
+<inputType id="org.eclipse.cdt.managedbuilder.ui.rcbs.inputtype.314149524" name="Resource Custom Build Step Input Type">
+<additionalInput paths="" kind="additionalinputdependency"/>
+</inputType>
+<outputType id="org.eclipse.cdt.managedbuilder.ui.rcbs.outputtype.1228894379" name="Resource Custom Build Step Output Type" outputNames=""/>
+</tool>
+</resourceConfiguration>
+<resourceConfiguration id="cdt.managedbuild.config.gnu.exe.debug.885739525./fgl-eclipse/win32/win32.cpp" name="win32.cpp" exclude="true" resourcePath="/fgl-eclipse/win32/win32.cpp" toolsToInvoke="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.1480042047./fgl-eclipse/win32/win32.cpp" rcbsApplicability="disable">
+<tool superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.1480042047" id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.1480042047./fgl-eclipse/win32/win32.cpp" name="GCC C++ Compiler"/>
+<tool id="org.eclipse.cdt.managedbuilder.ui.rcbs.135993052" name="Resource Custom Build Step" command="" customBuildStep="true" announcement="">
+<inputType id="org.eclipse.cdt.managedbuilder.ui.rcbs.inputtype.1587949199" name="Resource Custom Build Step Input Type">
+<additionalInput paths="" kind="additionalinputdependency"/>
+</inputType>
+<outputType id="org.eclipse.cdt.managedbuilder.ui.rcbs.outputtype.1454917009" name="Resource Custom Build Step Output Type" outputNames=""/>
+</tool>
+</resourceConfiguration>
+<resourceConfiguration id="cdt.managedbuild.config.gnu.exe.debug.885739525./fgl-eclipse/win32/win32.h" name="win32.h" exclude="true" resourcePath="/fgl-eclipse/win32/win32.h" toolsToInvoke="" rcbsApplicability="disable">
+<tool id="org.eclipse.cdt.managedbuilder.ui.rcbs.1334002049" name="Resource Custom Build Step" command="" customBuildStep="true" announcement="">
+<inputType id="org.eclipse.cdt.managedbuilder.ui.rcbs.inputtype.399909722" name="Resource Custom Build Step Input Type">
+<additionalInput paths="" kind="additionalinputdependency"/>
+</inputType>
+<outputType id="org.eclipse.cdt.managedbuilder.ui.rcbs.outputtype.964553762" name="Resource Custom Build Step Output Type" outputNames=""/>
+</tool>
+</resourceConfiguration>
+<resourceConfiguration id="cdt.managedbuild.config.gnu.exe.debug.885739525./fgl-eclipse/solaris/solaris.cpp" name="solaris.cpp" exclude="true" resourcePath="/fgl-eclipse/solaris/solaris.cpp" toolsToInvoke="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.1480042047./fgl-eclipse/solaris/solaris.cpp" rcbsApplicability="disable">
+<tool superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.1480042047" id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.1480042047./fgl-eclipse/solaris/solaris.cpp" name="GCC C++ Compiler"/>
+<tool id="org.eclipse.cdt.managedbuilder.ui.rcbs.1243127988" name="Resource Custom Build Step" command="" customBuildStep="true" announcement="">
+<inputType id="org.eclipse.cdt.managedbuilder.ui.rcbs.inputtype.799219762" name="Resource Custom Build Step Input Type">
+<additionalInput paths="" kind="additionalinputdependency"/>
+</inputType>
+<outputType id="org.eclipse.cdt.managedbuilder.ui.rcbs.outputtype.720271704" name="Resource Custom Build Step Output Type" outputNames=""/>
+</tool>
+</resourceConfiguration>
+</configuration>
+<configuration id="cdt.managedbuild.config.gnu.exe.release.63913997" name="Release" parent="cdt.managedbuild.config.gnu.exe.release" artifactName="fgl-eclipse" errorParsers="org.eclipse.cdt.core.MakeErrorParser;org.eclipse.cdt.core.GCCErrorParser;org.eclipse.cdt.core.GLDErrorParser;org.eclipse.cdt.core.GASErrorParser" cleanCommand="rm -rf">
+<toolChain superClass="cdt.managedbuild.toolchain.gnu.exe.release" id="cdt.managedbuild.toolchain.gnu.exe.release.1783110925" name="%ToolChainName.Rel">
+<tool superClass="cdt.managedbuild.tool.gnu.c.compiler.exe.release" id="cdt.managedbuild.tool.gnu.c.compiler.exe.release.171308778" name="GCC C Compiler"/>
+<tool superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.release" id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.release.194870398" name="GCC C++ Compiler"/>
+<tool superClass="cdt.managedbuild.tool.gnu.c.linker.exe.release" id="cdt.managedbuild.tool.gnu.c.linker.exe.release.1139389668" name="GCC C Linker"/>
+<tool superClass="cdt.managedbuild.tool.gnu.cpp.linker.exe.release" id="cdt.managedbuild.tool.gnu.cpp.linker.exe.release.1750719822" name="GCC C++ Linker"/>
+<tool superClass="cdt.managedbuild.tool.gnu.assembler.exe.release" id="cdt.managedbuild.tool.gnu.assembler.exe.release.209461618" name="GCC Assembler"/>
+</toolChain>
+</configuration>
+</project>
+</ManagedProjectBuildInfo>
